@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<style>
+			html{width: 100%; height: 100%;}
+			body{width: 100%; height: 100%; display: -webkit-box; -webkit-box-align: center; -webkit-box-pack: center;}
+			.register{width: 300px; height: 250px; border: 2px solid #de9eb6; text-align: center; padding-top: 50px; border-radius: 20px;}
+			.res_btn{margin-top: 20px;}
+			input:focus{outline: 0;}
+			form{color: red;}
+			input{height: 20px; -webkit-border-radius: 8px; border: 1px solid orangered; color: red; margin-bottom: 20px;}
+		</style>
+	</head>
+	<body>
+		<div class="register">
+			<form action="">
+				
+				<div class="name">
+					<label for="name">用户账户</label>
+					<input type="text" class="name" id="name" value=""/>
+				</div>
+				<div class="psd">
+					<label for="password">密&emsp;&emsp;码</label>
+					<input type="password" class="password" id="password" value=""/>
+				</div>
+				<div class="sec_psd">
+					<label for="check_psd">确认密码</label>
+					<input type="password" class="sec_password" id="check_psd" value=""/>
+				</div>
+				<input type="button" value="确认注册" class="res_btn"/>
+				<input type="button" value="登录" class="red_login_btn"/>
+				
+				
+			</form>
+		</div>
+		
+		<script src="js/jquery-1.10.2.min.js"></script>
+		<script>
+			$('.res_btn').on('click',function(){
+				var name = $('#name').val(),
+				psd = $('#password').val(),
+				sec_psd = $('#check_psd').val();
+				if(name == '' || psd == '' || sec_psd == ''){
+					alert('请完善信息');
+					return;
+				}else if(psd != sec_psd){
+					alert('密码输入有误');
+					return;
+				}
+				$.ajax({
+					type:"post",
+					url:"login?type=register",
+					async:true,
+					data:{
+						'username' : $('#name').val(),
+						'password' : $('#password').val()
+					},
+					success:function(data){
+						if(data == 1){
+							location.href = '/login.html';
+						}else if(data == 0){
+							alert('该账户已注册');
+						}else{
+							alert('fail');
+						}
+					}
+				});
+			})
+			$('.red_login_btn').on('click',function(){
+				location.href = '/login.html';
+			})
+		</script>
+	</body>
+</html>
+

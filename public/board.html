@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style>
+			html{width: 100%; height: 100%;}
+			body{width: 100%; height: 100%; display: -webkit-box; -webkit-box-align: center; -webkit-box-pack: center;}
+			.message_board{width: 500px; height: 800px; border: 2px solid #de9eb6; -webkit-border-radius: 20px; text-align: center;}
+			.textarea{width: 300px; height: 50px; border: 1px solid orangered; margin-right: 10px;}
+			input{-webkit-border-radius: 8px; border: 1px solid orangered; width: 40px; background-color: #f3bfd4; color: #000;}
+			input:focus{outline: 0;}
+			.message_list{display: inline-block; width: 350px; height: 500px; border: 1px dashed red; margin-top: 30px;}
+			.mess_list{display: inline-block; width: 350px; height: 430px; overflow: auto;}
+			.btns{margin-top: 30px;}
+			.lottery_btn,.price_li{width: 100px;}
+			.hide{display: none;}
+			.price_list{width: 350px; height: 600px; background-color: #DE9EB6; -webkit-border-radius: 20px; text-align: center; position: relative;}
+			p{height: 30px; line-height: 30px; background-color: #de9eb6; text-align: left; padding-left: 10px; position: relative; margin: 0;}
+			.mess_list input[type='button']{display: inline-block;}
+			.mess_list span{position: absolute; right: 10px;}
+			.list{width: 300px; height: 500px; display: inline-block; overflow: auto;}
+			.price_list h1{display: inline-block;}
+			.close{display: inline-block; width: 50px; height: 50px; border-radius: 25px; position: absolute; right: 20px; top: 20px;}
+			h6{margin: 0; padding: 0; text-align: left; padding-left: 20px;}
+		</style>
+	</head>
+	<body>
+		<div class="message_board ">
+			
+			<h1>留言板</h1>
+			<textarea class="textarea"></textarea>
+			<input type="button" value="留言" class="leave_words"/>
+			<div class="message_list">
+				<h3>留言列表</h3>
+				<div class="mess_list">
+					
+				</div>
+			</div>
+			<div class="btns">
+				<input type="button" value="抽奖" class="lottery_btn"/>
+				<input type="button" value="中奖名单" class="price_li"/>
+			</div>	
+			
+		</div>
+		
+		<div class="price_list hide">
+			<h1>中奖名单</h1>
+			<input type="button" class="close" value="close"/>
+			<div class="list">
+				
+			</div>
+		</div>
+		
+		<script src="js/jquery-1.10.2.min.js"></script>
+		<script src="js/jquery.cookie.js"></script>
+		<script type="text/javascript">
+			var html = '',
+				list = '';
+			if(!$.cookie('id')){
+				location.href = 'index.html';
+			}
+			$('.close').on('click',function(){
+				$('.price_list').addClass('hide');
+				$('.message_board').removeClass('hide');
+			})
+			$('.leave_words').on('click',function(){
+				var mess = $('.textarea').val();
+				if(mess == ''){
+					alert('请留言');
+					return;
+				}
+				var da = {
+					mess : mess
+				}
+				$.ajax({
+					type:"post",
+					url:"login?type=add_message",
+					async:true,
+					data:da,
+					success:function(data0){
+						if(data0 == 1){
+							alert('留言成功');
+							$('.textarea').val('');
+							$.ajax({
+								type:"get",
+								url:"login?type=get_message",
+								async:true,
+								success:function(data){
+									html = '';
+									for(var i = data.length-1; i >= 0 ; i--){
+										html += '<p>' + data[i].username + ' say :' + data[i].mess + '<span>点赞：<input type="button" class="lik" value="' + data[i].lik +'" data-id="' + data[i].id + '" /></span></p><h6>'+data[i].mtime +'</h6>';
+									}
+									$('.mess_list').html(html);
+									$('.lik').on('click',function(){
+										var th = this;
+										$.ajax({
+											type:"post",
+											url:"login?type=like_inc",
+											async:true,
+											data:{
+												id : $(th).attr('data-id')
+											},
+											success:function(data){
+												if(data == 1){
+													var curV = +$(th).val() + 1;
+													$(th).val(curV);
+												}
+											}
+										});
+									})
+								}
+							})
+						}else{
+							alert('fail');
+						}
+					}
+				});
+			})
+			$.ajax({
+				type:"get",
+				url:"login?type=get_message",
+				async:true,
+				success:function(data){
+					for(var i = data.length-1; i >= 0 ; i--){
+						html += '<p>' + data[i].username + ' say :' + data[i].mess + '<span>点赞：<input type="button" class="lik" value="' + data[i].lik +'" data-id="' + data[i].id + '" /></span></p><h6>'+data[i].mtime +'</h6>';
+					}
+					$('.mess_list').html(html);
+					$('.lik').on('click',function(){
+						var th = this;
+						$.ajax({
+							type:"post",
+							url:"login?type=like_inc",
+							async:true,
+							data:{
+								id : $(th).attr('data-id')
+							},
+							success:function(data){
+								if(data == 1){
+									var curV = +$(th).val() + 1;
+									$(th).val(curV);
+								}
+							}
+						});
+					})
+				}
+			});
+			$('.lottery_btn').on('click',function(){
+				$.ajax({
+					type:"post",
+					url:"login?type=lottery",
+					async:true,
+					success:function(data){
+						if(data == 0){
+							alert('请先留言或者点赞');
+						}else{
+							alert(data);
+						}
+						
+					}
+				});
+			})
+			$('.price_li').on('click',function(){
+				$.ajax({
+					type:"get",
+					url:"login?type=get_pri_list",
+					async:true,
+					success:function(data){
+						if(data.length != 0){
+							for(var i = 0; i < data.length; i++){
+								list += '<p>' + data[i].username + ' : ' + data[i].price +'</p>';
+							}
+							$('.list').html(list);
+							
+						}
+						$('.message_board').addClass('hide');
+						$('.price_list').removeClass('hide');
+					}
+				});
+			})
+			
+		</script>
+	</body>
+</html>
